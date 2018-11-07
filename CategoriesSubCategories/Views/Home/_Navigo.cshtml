@@ -1,0 +1,9 @@
+﻿@model IEnumerable<CategoriesSubCategories.Models.Category>
+
+
+@foreach (var item in Model)
+{
+
+    <li>@Html.ActionLink(@item.CategoryName, "ProductsInMainCategory", "Home", new { id = @item.CategoryID }, new { @class = "" })</li>
+}
+

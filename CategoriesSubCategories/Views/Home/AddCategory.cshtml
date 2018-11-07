@@ -1,0 +1,124 @@
+﻿@model IEnumerable<Category>
+
+@{
+    ViewBag.Title = "AddCategory";
+}
+
+<link href="~/Content/StyleSheet.css" rel="stylesheet" />
+
+<h2>Add Category</h2>
+
+<form method="post" action="/home/AddCategory" enctype="multipart/form-data">
+    <div class="row MarginLeft">
+
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
+            @{
+                <p>Hoved Kategorier</p>
+                <select name="CategoryIDMain">
+                    <option value="0" )>Vælg Hovedkategori</option>
+                    @foreach (Category item in Model)
+                    {
+                        <option value="@item.CategoryID" )>@item.CategoryName</option>
+                    }
+                </select>
+                <br />
+                <br />
+                <div class="SubCategories">
+                    <label>Tilføj kategori som hovedkategori </label>
+                    <input type="checkbox" name="ParentCategoryID" value="0" />
+                    <br />
+                </div>
+
+                <br />
+                <br />
+                <label for="name">Kategori Navn :</label>
+                <input type="text" name="CategoryName" placeholder="Indtast Kategori Navn" required title="Husk at indtaste Kategori Navn !!!" />
+                <br />
+                <br />
+                <input type="submit" id="btnSubmit" value="Gem Kategori" />
+            }
+
+        </div>
+    </div>
+</form>
+
+<br />
+<br />
+@Html.ActionLink("Tilbage til Start Side", "Index", "Home")
+<br />
+<br />
+
+@section scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('select[name = "CategoryIDMain"]').change(function () {
+                if ($(this).val() != 0)
+                {
+                   $.ajax({
+                        type: "POST",
+                        data: "ParentCategoryID=" + $(this).val(),
+                        url: "/Home/GetSubCategoriesUnderMainCategory",
+                        success: function (data)
+                        {
+                            $(".SubCategories").empty();
+                            if (data.length > 0) {
+                                var WorkString = "";
+                                WorkString += "Tilføj kategori som hovedkategori ";
+                                WorkString += '<input type="checkbox" name="ParentCategoryID" value="0" />';
+                                WorkString += "<br />";
+                                $(".SubCategories").append(WorkString);
+
+                                $.each(data, function (key, item) {
+                                    WorkString = "";
+                                    for (var Counter = 1; Counter <= item.CategoryLevel; Counter++) {
+                                        WorkString += '<span class="MarginLeft"></span>';
+                                    }
+                                    WorkString += "Tilføj kategori som subkategori til : ";
+                                    WorkString += '<input type="checkbox" name="ParentCategoryID"' + "value=" + item.CategoryID + " />" + item.CategoryName;
+                                    WorkString += "<br />"; 
+
+                                    $(".SubCategories").append(WorkString);
+                                });
+                            }
+                        }
+                    });
+
+                }
+                else
+                {
+                    $(".SubCategories").empty();
+                }
+            });
+
+            $("body").on("click", "[name=ParentCategoryID]", function () {
+                var ThisElement = $(this);
+                $("[name=ParentCategoryID]").each(function () {
+                    $(this).prop("checked", false);
+                });
+                ThisElement.prop("checked", true);
+            });
+
+            $("#btnSubmit").click(function (e) {
+                var CheckedCategoryIDFound = false;
+                $("[name=ParentCategoryID]").each(function () {
+                    if ($(this).is(":checked"))
+                    {
+                        CheckedCategoryIDFound = true;
+                    }
+                });
+
+                if (false == CheckedCategoryIDFound)
+                {
+                    alert("Husk at vælge kategori som kategorien skal høre under !!!");
+                    e.preventDefault();
+                }
+
+            });
+        });
+    </script>
+}
+
+
+
+

@@ -1,0 +1,124 @@
+﻿@model IEnumerable<Category>
+
+@{
+    ViewBag.Title = "AddProduct";
+}
+
+<link href="~/Content/StyleSheet.css" rel="stylesheet" />
+
+<h2>Add Product</h2>
+
+<form method="post" action="/home/AddProduct" enctype="multipart/form-data">
+    <div class="row MarginLeft">
+
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
+            @{
+                <p>Hoved Kategorier</p>
+                <select name="CategoryIDMain">
+                    <option value="0" )>Vælg Hovedkategori</option>
+                    @foreach (Category item in Model)
+                    {
+                        <option value="@item.CategoryID" )>@item.CategoryName</option>
+                    }
+                </select>
+                <br />
+                <br />
+                <div class="SubCategories">
+
+                </div>
+
+                <br />
+                <br />
+                <label for="name">Produkt Navn :</label>
+                <input type="text" name="ProductName" placeholder="Indtast Produkt Navn" required title="Husk at indtaste produkt navn !!!" />
+                <br />
+                <br />
+                <input type="submit" id="btnSubmit" value="Gem Produkt" disabled="disabled"/>
+            }
+
+        </div>
+    </div>
+</form>
+
+<br />
+<br />
+@Html.ActionLink("Tilbage til Start Side", "Index", "Home")
+<br />
+<br />
+
+@section scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('select[name = "CategoryIDMain"]').change(function () {
+                if ($(this).val() != 0)
+                {
+                    $("#btnSubmit").prop('disabled', false);
+                    $.ajax({
+                        type: "POST",
+                        data: "ParentCategoryID=" + $(this).val(),
+                        url: "/Home/GetSubCategoriesUnderMainCategory",
+                        success: function (data)
+                        {
+                            $(".SubCategories").empty();
+                            if (data.length > 0) {
+                                $.each(data, function (key, item) {
+                                    var WorkString = "";
+                                    if (item.CategoryLevel > 1)
+                                    {
+                                        for (var Counter = 1; Counter < item.CategoryLevel; Counter++) {
+                                            WorkString += '<span class="MarginLeft"></span>';
+                                        }
+                                        WorkString += "TifFøj produkt til kategori : ";
+                                        WorkString += '<input type="checkbox" name="CategoryID"' + "value=" + item.CategoryID + " />" + item.CategoryName;
+                                        WorkString += "<br />";
+                                    }
+                                    else
+                                    {
+                                        WorkString += "<b><u>Kategorier under hovedkategori : ";
+                                        WorkString += item.CategoryName;
+                                        WorkString += "</u></b>";
+                                        WorkString += "<br />";
+                                    }
+
+                                    $(".SubCategories").append(WorkString);
+                                });
+                            }
+                        }
+                    });
+
+                }
+                else
+                {
+                    $(".SubCategories").empty();
+                    $("#btnSubmit").prop('disabled', true);
+                }
+            });
+
+            $("body").on("click", "[name=CategoryID]", function () {
+                var ThisElement = $(this);
+                $("[name=CategoryID]").each(function () {
+                    $(this).prop("checked", false);
+                });
+                ThisElement.prop("checked", true);
+            });
+
+            $("#btnSubmit").click(function (e) {
+                var CheckedCategoryIDFound = false;
+                $("[name=CategoryID]").each(function () {
+                    if ($(this).is(":checked"))
+                    {
+                        CheckedCategoryIDFound = true;
+                    }
+                });
+
+                if (false == CheckedCategoryIDFound)
+                {
+                    alert("Husk at vælge kategori som produktet skal tilhøre !!!");
+                    e.preventDefault();
+                }
+
+            });
+        });
+    </script>
+}

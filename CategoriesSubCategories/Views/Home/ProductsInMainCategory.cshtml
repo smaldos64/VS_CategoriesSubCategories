@@ -1,0 +1,59 @@
+﻿@model IEnumerable<Product>
+
+@{
+    ViewBag.Title = "ProductsInMainCategory";
+    //List<Category> SubCategoryList = ViewBag.SubCategoryList;
+    Category CategoryObject = ViewBag.Category;
+    List<Category> CategoryList = new List<Category>();
+    List<VM_CategoryLevel> VM_CategoryLevel_List = ViewBag.SubCategoryLevelList;
+}
+
+<link href="~/Content/StyleSheet.css" rel="stylesheet" />
+
+@{
+    if (Model.Count() > 0)
+    {
+        @*<h2>Products In Category @Model.ElementAt(0).Category.ParentCategory.CategoryName</h2>*@
+        <h2>Products In Category @CategoryObject.CategoryName</h2>
+    }
+    else
+    {
+        <h2>No Products for Category @CategoryObject.CategoryName</h2>
+    }
+}
+
+@{
+    foreach (Product item in Model)
+    {
+        <label>Product ID : @item.ProductID</label>
+        <br />
+        <label>Product Name : @item.ProductName</label>
+        <br />
+        <br />
+    }
+
+    <br />
+    <br />
+
+    @*CategoryList = RecursiveFunction.GetAllCategoriesUnderMainCategory(CategoryObject);
+
+    foreach (Category item in CategoryList)
+    {
+        @Html.ActionLink("Se produkter i kategori : " + @item.CategoryName, "ProductsInMainCategory", "Home",
+              new { id = @item.CategoryID }, new { @class = "" });
+        <br />
+    }*@
+
+    foreach (VM_CategoryLevel item in VM_CategoryLevel_List)
+    {
+        for (int Counter = 1; Counter < @item.CategoryLevel; Counter++)
+        {
+            <span class="MarginLeft"></span>
+        }
+        @Html.ActionLink("Se produkter i kategori : " + @item.Category.CategoryName + 
+          " (Level : " + @item.CategoryLevel + ")", "ProductsInMainCategory", "Home",
+              new { id = @item.Category.CategoryID }, new { @class = "" });
+        <br />
+    }
+
+}
